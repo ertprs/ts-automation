@@ -1,12 +1,11 @@
-import puppeteer from 'puppeteer';
-import {config as dotenv} from 'dotenv';
+import { config as dotenv } from 'dotenv'
+import puppeteer from 'puppeteer'
 
-
-const start = async() => {
+const start = async () => {
     dotenv()
     const browser = await puppeteer.launch({
         headless: false,
-        args : ['--disable-notifications'],
+        args: ['--disable-notifications'],
 
     });
 
@@ -21,13 +20,24 @@ const start = async() => {
 
     await page.waitForNavigation()
 
-    const options = await page.$$eval('div > a', options => 
-        options.map(option =>
-            option.textContent))
+    const [h2] = await page.$x("//h2[contains(., 'Correção de redação')]");
+
+    if (!h2) console.error("Err")
+    await h2.click()
+    await page.waitForNavigation({ waitUntil: 'networkidle0' })
+
+    /// get the theme
+
+    const element = await page.$("#redacao-da-semana");
+    const text = await page.evaluate(element => element.textContent, element);
 
 
-    console.log(options)
-    console.log("sucess")
+    //get all old themes
+
+    const red = await page.$$eval('.EssaysListWrapper', x => x.map(x=> x.textContent))
+
+
+    console.log(text)
 
     browser.close()
 
